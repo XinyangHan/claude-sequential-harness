@@ -1,0 +1,30 @@
+name: Claude on Issue Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  claude:
+    # 只在包含 @claude 的普通 issue comment 上跑
+    if: >
+      github.event.issue.pull_request == null &&
+      contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@main
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          trigger_phrase: "@claude"
+          allowed_tools: "Bash(clear *)"
+          claude_args: "--allowedTools Bash(clear *)"
